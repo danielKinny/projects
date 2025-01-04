@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta charset = "UTF-8">
+
+        <style>
+
+            body{
+                background-color: #f4f4f4;
+            }
+
+            #CIDcanvas{
+                border:solid 1px;
+                display:block;
+                margin: auto;
+                margin-top:50px;
+                height : 200px;
+                width : 400px;
+            }
+
+            .canvas-container{
+                margin:auto;
+                border: solid 1px;
+                width:600px;
+                height:300px;
+                background-color: white;
+            }
+            .buttons-container{
+                padding-top:50px;
+                height:40px;
+                width:400px;
+                margin:auto;
+                display:flex;
+                justify-content: space-around;
+            }
+            .buttons{
+                width:200px;
+                height:40px;
+                justify-content: center;
+                text-align: center;
+                display:flex;
+                align-items: center;
+            }
+
+            .button{
+                background-color: #89A8B2;
+                border: none;
+                padding:4%;
+                padding-left: 20px;
+                padding-right: 20px;
+                border-radius: 4px;
+                color:white;
+                font-family:Verdana, Geneva, Tahoma, sans-serif;
+                cursor:pointer;
+            }
+
+        </style>
+    </head>
+
+    <body> 
+
+        <div class="canvas-container">
+           <canvas id="CIDcanvas"></canvas>
+        </div>
+
+        <div class="buttons-container">
+            <div class="buttons">
+                <button id = "reset-button" onClick="resetSim()" class="button">
+                    Start/Reset?
+                </button>
+            </div>
+
+            
+
+        </div>
+        
+        
+
+        <script>
+
+            let simulationState = {};
+            let animationFrame;
+            let isPaused = false;
+            const canvas = document.getElementById("CIDcanvas");
+            const ctx = canvas.getContext('2d');
+            const resetButton = document.getElementById("reset-button");
+
+            document.addEventListener("keydown", (event)=>{
+                if(event.code === 'Space'){
+                    isPaused = true;
+                    cancelAnimationFrame(animationFrame);
+                }
+            });
+
+            function staticCircle(){
+                const centerX = canvas.width /2;
+                const centerY = canvas.height /2;
+                const radius = 60;
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI*2);
+                ctx.fillStyle="white";
+                ctx.fill();
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.closePath();
+
+            }
+
+            function drawModel(centerX,centerY){
+                const radius = 8;
+                
+                ctx.beginPath();
+                ctx.arc(centerX,centerY,radius, 0, Math.PI*2);
+                ctx.fillStyle = "blue";
+                ctx.fill();
+                ctx.closePath();
+
+            }
+
+            function initialiseSim(){
+                isPaused = false;
+                simulationState = {
+                    ball: {
+                        x: 78,
+                        y: 100,
+                        vx: 0.25,
+                        radius:8
+                    }
+                };
+            }
+
+            function updateSim(){
+                const ball = simulationState.ball;
+
+                if(!isPaused){
+                    ball.x+=ball.vx;
+                }
+
+                if (ball.x + ball.radius >= (canvas.width/2) - 8){
+                    isPaused = true;
+                    cancelAnimationFrame(animationFrame);
+                } 
+
+            }
+
+            function renderSim(){
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                const ball = simulationState.ball;
+
+                staticCircle();
+
+                drawModel(canvas.width/2,canvas.height/2);
+
+                drawModel(ball.x,canvas.height/2);
+            }
+
+            function simLoop(){
+                updateSim();
+                renderSim();
+                animationFrame = requestAnimationFrame(simLoop);
+            }
+
+            function resetSim(){
+                cancelAnimationFrame(animationFrame);
+                initialiseSim();
+                renderSim();
+                setTimeout(()=>{
+                    simLoop();
+                }, 1000);
+                resetButton.blur();
+            }
+            
+
+        </script>
+    </body>
+</html>
