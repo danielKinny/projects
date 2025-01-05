@@ -56,12 +56,18 @@
                 cursor:pointer;
             }
 
+            #distance{
+                text-align:center;
+                font-size:20px;
+            }
+
         </style>
     </head>
 
     <body> 
 
         <div class="canvas-container">
+            <p id="distance"> this is a demo </p>
            <canvas id="CIDcanvas"></canvas>
         </div>
 
@@ -86,6 +92,7 @@
             const canvas = document.getElementById("CIDcanvas");
             const ctx = canvas.getContext('2d');
             const resetButton = document.getElementById("reset-button");
+            const distanceDisplay = document.getElementById("distance");
 
             document.addEventListener("keydown", (event)=>{
                 if(event.code === 'Space'){
@@ -104,17 +111,18 @@
                 ctx.fillStyle="white";
                 ctx.fill();
                 ctx.strokeStyle = 'black';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
                 ctx.stroke();
                 ctx.closePath();
 
             }
 
-            function drawModel(centerX,centerY){
+            function drawModel(x,y){
+
                 const radius = 8;
                 
                 ctx.beginPath();
-                ctx.arc(centerX,centerY,radius, 0, Math.PI*2);
+                ctx.arc(x,y,radius, 0, Math.PI*2);
                 ctx.fillStyle = "blue";
                 ctx.fill();
                 ctx.closePath();
@@ -124,39 +132,56 @@
             function initialiseSim(){
                 isPaused = false;
                 simulationState = {
-                    ball: {
-                        x: 78,
+                    protag: {
+                        x: 80,
                         y: 100,
                         vx: 0.25,
-                        radius:8
+                        radius:8,
+                        distance:0
                     }
                 };
             }
 
             function updateSim(){
-                const ball = simulationState.ball;
-
+                const protag = simulationState.protag;
+                
                 if(!isPaused){
-                    ball.x+=ball.vx;
+                    protag.x+=protag.vx;
                 }
+                
+                protag.distance = updateDistance();
 
-                if (ball.x + ball.radius >= (canvas.width/2) - 8){
+                if (protag.x + protag.radius >= (canvas.width/2) - 8){
                     isPaused = true;
                     cancelAnimationFrame(animationFrame);
                 } 
 
+                
+
+            }
+
+            function updateDistance(){
+                const protag = simulationState.protag;
+                const centerOfX = canvas.width/2;
+                const centerDist = Math.abs(centerOfX - protag.x);
+                let edgeDist = centerDist - (2*protag.radius);
+                return 100-(100*edgeDist/104);
             }
 
             function renderSim(){
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                const ball = simulationState.ball;
+                const protag = simulationState.protag;
 
                 staticCircle();
 
                 drawModel(canvas.width/2,canvas.height/2);
 
-                drawModel(ball.x,canvas.height/2);
+                drawModel(protag.x,canvas.height/2);
+
+                distanceDisplay.innerHTML = `the distance is: ${protag.distance}`;
+                
+
             }
 
             function simLoop(){
@@ -173,9 +198,9 @@
                     simLoop();
                 }, 1000);
                 resetButton.blur();
+                
             }
             
-
         </script>
     </body>
 </html>
