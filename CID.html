@@ -98,6 +98,9 @@
             const ctx = canvas.getContext('2d');
             const resetButton = document.getElementById("reset-button");
             const distanceDisplay = document.getElementById("distance");
+            const clearCanvas = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
 
             document.addEventListener("keydown", (event)=>{
                 if(event.code === 'Space'){
@@ -122,6 +125,20 @@
 
             }
 
+            function displayFixationPoint() {
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const fixationRadius = 5;
+                const fixationColor = 'black';
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, fixationRadius, 0, 2 * Math.PI);
+                ctx.fillStyle = fixationColor;
+                ctx.fill();
+                ctx.stroke();
+            }
+
+
             function drawModel(x,y){
 
                 const radius = 8;
@@ -138,11 +155,17 @@
                 isPaused = false;
                 simulationState = {
                     protag: {
-                        x: 80,
+                        x: (canvas.width/2)-68,
                         y: 100,
                         vx: 0.25,
                         radius:8,
-                        distance:0
+                        distance:100
+                    },
+
+                    stationary: {
+                        x:canvas.width/2,
+                        y:canvas.width/2,
+                        radius:8
                     }
                 };
             }
@@ -166,11 +189,11 @@
             }
 
             function updateDistance(){
+                const DISTANCE_DIVISOR = 52;
                 const protag = simulationState.protag;
-                const centerOfX = canvas.width/2;
-                const centerDist = Math.abs(centerOfX - protag.x);
-                let edgeDist = centerDist - (2*protag.radius);
-                return 100-(100*edgeDist/104);
+                const stationary = simulationState.stationary; 
+                const dist = (stationary.x - protag.x - (stationary.radius + protag.radius) );
+                return (100*dist/DISTANCE_DIVISOR);
             }
 
             function renderSim(){
@@ -195,14 +218,32 @@
                 animationFrame = requestAnimationFrame(simLoop);
             }
 
+            function displayProtag(){
+                const generator = () => (Math.ceil(Math.random() * 4))
+                let text = generator()===1 ? "authority" : generator()===2 ? "friend" : generator()===3 ? "stranger" : "ball";
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, canvas.width/2, canvas.height/2);
+            }
+
             function resetSim(){
                 cancelAnimationFrame(animationFrame);
-                initialiseSim();
-                renderSim();
+                clearCanvas();
+                displayProtag();
                 setTimeout(()=>{
-                    simLoop();
-                }, 1000);
-                resetButton.blur();
+                    clearCanvas();
+                    displayFixationPoint();
+                    setTimeout(()=>{
+                        initialiseSim();
+                        renderSim();
+                        setTimeout(()=>{
+                            simLoop();
+                        }, 1000);
+                        resetButton.blur();
+                    },500)
+                
+                }, 1000)
                 
             }
             
