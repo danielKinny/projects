@@ -157,7 +157,7 @@
                     protag: {
                         x: (canvas.width/2)-68,
                         y: 100,
-                        vx: 0.25,
+                        vx: 0.4,
                         radius:8,
                         distance:100
                     },
@@ -193,7 +193,7 @@
                 const protag = simulationState.protag;
                 const stationary = simulationState.stationary; 
                 const dist = (stationary.x - protag.x - (stationary.radius + protag.radius) );
-                return (100*dist/DISTANCE_DIVISOR);
+                return Math.max(100*dist/DISTANCE_DIVISOR, 0);
             }
 
             function renderSim(){
